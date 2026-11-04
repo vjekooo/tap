@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 rodio = "0.20"
 ratatui = "0.29"
+dirs = "5"

@@ -1,6 +1,7 @@
 mod app;
 mod browser;
 mod player;
+mod state;
 mod ui;
 
 use app::App;
@@ -29,7 +30,6 @@ fn main() -> io::Result<()> {
     let cwd = || std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     let arg = std::env::args().nth(1).map(PathBuf::from);
 
-    // Start the browser in the given directory, the file's directory, or the cwd
     let start_dir = match &arg {
         Some(p) if p.is_dir() => p.clone(),
         Some(p) => p
@@ -37,7 +37,7 @@ fn main() -> io::Result<()> {
             .filter(|d| !d.as_os_str().is_empty())
             .map(Path::to_path_buf)
             .unwrap_or_else(cwd),
-        None => cwd(),
+        None => state::load_last_dir().unwrap_or_else(cwd),
     };
 
     let mut app = App::new(start_dir, handle);
@@ -54,6 +54,8 @@ fn main() -> io::Result<()> {
     terminal.clear()?;
 
     let result = run(&mut terminal, &mut app);
+
+    state::save_last_dir(&app.browser.dir);
 
     disable_raw_mode()?;
     execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
