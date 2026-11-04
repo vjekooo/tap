@@ -1,3 +1,4 @@
+use crate::metadata::{self, TrackInfo};
 use rodio::{Decoder, OutputStreamHandle, Sink, Source};
 use std::{fs::File, io::BufReader, path::Path, time::Duration};
 
@@ -7,6 +8,7 @@ pub struct Player {
     pub name: String,
     pub total: Duration,
     pub volume: f32,
+    pub info: TrackInfo,
 }
 
 impl Player {
@@ -17,6 +19,7 @@ impl Player {
             name: String::new(),
             total: Duration::ZERO,
             volume: 1.0,
+            info: TrackInfo::default(),
         }
     }
 
@@ -47,6 +50,7 @@ impl Player {
             .unwrap_or_default()
             .to_string_lossy()
             .to_string();
+        self.info = metadata::read(path);
         Ok(())
     }
 

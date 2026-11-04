@@ -1,5 +1,6 @@
 mod app;
 mod browser;
+mod metadata;
 mod player;
 mod state;
 mod ui;
@@ -42,7 +43,6 @@ fn main() -> io::Result<()> {
 
     let mut app = App::new(start_dir, handle);
 
-    // If a file was passed on the command line, play it right away
     if let Some(p) = arg.filter(|p| p.is_file()) {
         app.load_file(&p);
     }

@@ -53,7 +53,7 @@ impl Browser {
                     let path = e.path();
                     let name = e.file_name().to_string_lossy().to_string();
                     if name.starts_with('.') {
-                        return None; // hide dotfiles
+                        return None;
                     }
                     let is_dir = path.is_dir();
                     if is_dir || is_audio(&path) {
@@ -99,7 +99,6 @@ impl Browser {
         }
     }
 
-    /// Enter a directory, or return the audio file to play.
     pub fn enter(&mut self) -> Option<PathBuf> {
         let entry = self.entries.get(self.state.selected()?)?;
         if entry.is_dir {

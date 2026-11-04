@@ -31,7 +31,11 @@ fn draw_player(f: &mut Frame, app: &App) {
         ])
         .split(f.area());
 
-    let name = if p.name.is_empty() { "-" } else { &p.name };
+    let name = if p.name.is_empty() {
+        "-".to_string()
+    } else {
+        p.info.display(&p.name)
+    };
     let title = Paragraph::new(format!(
         "{}  |  {}  |  Vol {}%",
         name,
@@ -66,7 +70,9 @@ fn draw_player(f: &mut Frame, app: &App) {
             .block(Block::default().borders(Borders::ALL).title(" Controls "));
     f.render_widget(controls, chunks[2]);
 
-    f.render_widget(Paragraph::new(app.message.as_str()), chunks[3]);
+    if let Some(album) = &p.info.album {
+        f.render_widget(Paragraph::new(format!("Album: {album}")), chunks[3]);
+    }
 }
 
 fn draw_browser(f: &mut Frame, app: &mut App) {

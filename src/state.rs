@@ -7,7 +7,6 @@ fn state_file() -> Option<PathBuf> {
     Some(p)
 }
 
-/// Returns the saved directory, if it still exists.
 pub fn load_last_dir() -> Option<PathBuf> {
     let text = fs::read_to_string(state_file()?).ok()?;
     let path = PathBuf::from(text.trim());
