@@ -2,9 +2,27 @@
 name = "terminal-audio-player"
 version = "0.1.0"
 edition = "2024"
+description = "Terminal Audio Player"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/vjekooo/tap"
+
+[[bin]]
+name = "tap"
+path = "src/main.rs"
 
 [dependencies]
 rodio = "0.20"
 ratatui = "0.29"
 dirs = "5"
 lofty = "0.22"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
