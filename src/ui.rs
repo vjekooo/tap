@@ -56,13 +56,14 @@ fn draw_player(f: &mut Frame, app: &App) {
     };
     let progress = Gauge::default()
         .block(Block::default().borders(Borders::ALL).title(" Progress "))
-        .gauge_style(Style::default().fg(Color::Green))
+        .gauge_style(Style::default().fg(Color::LightCyan))
         .label(label)
         .ratio(ratio);
     f.render_widget(progress, chunks[1]);
 
-    let controls = Paragraph::new("O=Open  SPACE=Play/Pause  S=Stop  [/]=Seek  V/B=Vol  Q=Quit")
-        .block(Block::default().borders(Borders::ALL).title(" Controls "));
+    let controls =
+        Paragraph::new("O=Open File  SPACE=Play/Pause  S=Stop  ←/→=Seek  ↑/↓=Volume  Q=Quit")
+            .block(Block::default().borders(Borders::ALL).title(" Controls "));
     f.render_widget(controls, chunks[2]);
 
     f.render_widget(Paragraph::new(app.message.as_str()), chunks[3]);

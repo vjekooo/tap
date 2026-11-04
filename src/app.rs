@@ -45,10 +45,10 @@ impl App {
                 KeyCode::Char('o') => self.mode = Mode::Browser,
                 KeyCode::Char(' ') => self.player.toggle_pause(),
                 KeyCode::Char('s') => self.player.stop(),
-                KeyCode::Char('[') => self.player.seek(false),
-                KeyCode::Char(']') => self.player.seek(true),
-                KeyCode::Char('v') => self.player.change_volume(0.1),
-                KeyCode::Char('b') => self.player.change_volume(-0.1),
+                KeyCode::Left => self.player.seek(false),
+                KeyCode::Right => self.player.seek(true),
+                KeyCode::Up => self.player.change_volume(0.1),
+                KeyCode::Down => self.player.change_volume(-0.1),
                 _ => {}
             },
             Mode::Browser => match code {
