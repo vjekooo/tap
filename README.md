@@ -15,7 +15,7 @@ Download a prebuilt binary from the [Releases](https://github.com/vjekooo/tap/re
 Or build from GitHub (requires [Rust](https://rustup.rs)):
 
 ```bash
-cargo install --git https://github.com/YOU/tap
+cargo install --git https://github.com/vjekooo/tap
 ```
 
 On Linux, building needs the ALSA development files:
