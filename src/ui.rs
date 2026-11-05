@@ -3,7 +3,7 @@ use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
-    widgets::{Block, Borders, Gauge, List, ListItem, Paragraph},
+    widgets::{Block, Borders, Gauge, List, ListItem, ListState, Paragraph},
 };
 use std::time::Duration;
 
@@ -24,10 +24,10 @@ fn draw_player(f: &mut Frame, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(3),
-            Constraint::Length(3),
-            Constraint::Length(3),
-            Constraint::Min(0),
+            Constraint::Length(3), // 0: title
+            Constraint::Length(3), // 1: progress
+            Constraint::Min(3),    // 2: queue
+            Constraint::Length(3), // 3: controls
         ])
         .split(f.area());
 
@@ -65,14 +65,34 @@ fn draw_player(f: &mut Frame, app: &App) {
         .ratio(ratio);
     f.render_widget(progress, chunks[1]);
 
-    let controls =
-        Paragraph::new("O=Open File  SPACE=Play/Pause  S=Stop  ←/→=Seek  ↑/↓=Volume  Q=Quit")
-            .block(Block::default().borders(Borders::ALL).title(" Controls "));
-    f.render_widget(controls, chunks[2]);
+    let items: Vec<ListItem> = p
+        .queue_names
+        .iter()
+        .enumerate()
+        .map(|(i, name)| ListItem::new(format!("{:>2}. {}", i + 1, name)))
+        .collect();
 
-    if let Some(album) = &p.info.album {
-        f.render_widget(Paragraph::new(format!("Album: {album}")), chunks[3]);
+    let queue_title = match &p.info.album {
+        Some(album) => format!(" {album} "),
+        None => " Queue ".to_string(),
+    };
+
+    let list = List::new(items)
+        .block(Block::default().borders(Borders::ALL).title(queue_title))
+        .highlight_style(Style::default().bg(Color::Green).fg(Color::Black))
+        .highlight_symbol("▶ ");
+
+    let mut state = ListState::default();
+    if !p.queue.is_empty() {
+        state.select(Some(p.index));
     }
+    f.render_stateful_widget(list, chunks[2], &mut state);
+
+    let controls = Paragraph::new(
+        "O=Open  SPACE=Play/Pause  S=Stop  N/P=Next/Prev  ←/→=Seek  ↑/↓=Volume  Q=Quit",
+    )
+    .block(Block::default().borders(Borders::ALL).title(" Controls "));
+    f.render_widget(controls, chunks[3]);
 }
 
 fn draw_browser(f: &mut Frame, app: &mut App) {
@@ -109,10 +129,9 @@ fn draw_browser(f: &mut Frame, app: &mut App) {
         .highlight_symbol("> ");
     f.render_stateful_widget(list, chunks[0], &mut app.browser.state);
 
-    let help_text = if app.message.is_empty() {
-        "Up/Down=Move  Enter=Open  Backspace=Parent dir  Esc=Back to player  Q=Quit".to_string()
-    } else {
-        app.message.clone()
+    let help_text = {
+        "Up/Down=Move  Enter=Play song  P=Queue this folder  Backspace=Parent  Esc=Back  Q=Quit"
+            .to_string()
     };
     let help =
         Paragraph::new(help_text).block(Block::default().borders(Borders::ALL).title(" Help "));

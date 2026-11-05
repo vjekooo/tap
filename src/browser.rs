@@ -109,4 +109,12 @@ impl Browser {
             Some(entry.path.clone())
         }
     }
+
+    pub fn audio_files(&self) -> Vec<PathBuf> {
+        self.entries
+            .iter()
+            .filter(|e| !e.is_dir)
+            .map(|e| e.path.clone())
+            .collect()
+    }
 }

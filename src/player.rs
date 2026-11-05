@@ -1,6 +1,11 @@
 use crate::metadata::{self, TrackInfo};
 use rodio::{Decoder, OutputStreamHandle, Sink, Source};
-use std::{fs::File, io::BufReader, path::Path, time::Duration};
+use std::{
+    fs::File,
+    io::BufReader,
+    path::{Path, PathBuf},
+    time::Duration,
+};
 
 pub struct Player {
     handle: OutputStreamHandle,
@@ -9,6 +14,10 @@ pub struct Player {
     pub total: Duration,
     pub volume: f32,
     pub info: TrackInfo,
+    pub queue: Vec<PathBuf>,
+    pub queue_names: Vec<String>,
+    pub index: usize,
+    stopped: bool,
 }
 
 impl Player {
@@ -20,6 +29,10 @@ impl Player {
             total: Duration::ZERO,
             volume: 1.0,
             info: TrackInfo::default(),
+            queue: Vec::new(),
+            queue_names: Vec::new(),
+            index: 0,
+            stopped: false,
         }
     }
 
@@ -51,6 +64,8 @@ impl Player {
             .to_string_lossy()
             .to_string();
         self.info = metadata::read(path);
+
+        self.stopped = false;
         Ok(())
     }
 
@@ -64,7 +79,8 @@ impl Player {
         }
     }
 
-    pub fn stop(&self) {
+    pub fn stop(&mut self) {
+        self.stopped = true;
         if let Some(sink) = &self.sink {
             sink.stop();
         }
@@ -105,5 +121,54 @@ impl Player {
 
     pub fn position(&self) -> Duration {
         self.sink.as_ref().map(|s| s.get_pos()).unwrap_or_default()
+    }
+
+    pub fn load_queue(&mut self, queue: Vec<PathBuf>, index: usize) -> Result<(), String> {
+        self.queue_names = queue
+            .iter()
+            .map(|path| {
+                let file_name = path
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .to_string();
+                crate::metadata::read(path).display(&file_name)
+            })
+            .collect();
+        self.queue = queue;
+        self.index = index;
+        self.play_current()
+    }
+
+    fn play_current(&mut self) -> Result<(), String> {
+        let path = self
+            .queue
+            .get(self.index)
+            .cloned()
+            .ok_or_else(|| "Queue is empty".to_string())?;
+        self.load(&path)
+    }
+
+    pub fn next(&mut self) -> Result<(), String> {
+        if self.index + 1 < self.queue.len() {
+            self.index += 1;
+            self.play_current()
+        } else {
+            Ok(())
+        }
+    }
+
+    pub fn prev(&mut self) -> Result<(), String> {
+        if self.index > 0 {
+            self.index -= 1;
+            self.play_current()
+        } else {
+            Ok(())
+        }
+    }
+
+    pub fn tick(&mut self) -> Result<(), String> {
+        let finished = !self.stopped && self.sink.as_ref().is_some_and(|s| s.empty());
+        if finished { self.next() } else { Ok(()) }
     }
 }

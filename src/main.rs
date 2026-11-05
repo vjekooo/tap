@@ -67,6 +67,7 @@ fn main() -> io::Result<()> {
 fn run(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, app: &mut App) -> io::Result<()> {
     loop {
         terminal.draw(|f| ui::draw(f, app))?;
+        app.tick();
 
         if event::poll(Duration::from_millis(100))? {
             if let Event::Key(key) = event::read()? {
